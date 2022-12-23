@@ -36,9 +36,17 @@ Options:
 ## Use case
 
 1. Register hello.txt.
-  - `bind -t txt -r -f hello.txt`
-  - `bind -t txt -s -k hello`
+  - `simpfile2db -t txtdb -r -f hello.txt`
+  - `simpfile2db -t txtdb -s -k hello`
 2. Restore hello.txt.
-  - `bind -t txt -o -k hello`
+  - `simpfile2db -t txtdb -o -k hello`
+
+```env.toml
+[env]
+  [env.txtdb]
+    name = "sample"
+    description = "text files."
+    ext = ".txt"
+```
 
 Hobbyright 2022 walnut 🐿🐿🐿 .
