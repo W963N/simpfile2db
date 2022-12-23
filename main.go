@@ -4,12 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
-
-	log "github.com/sirupsen/logrus"
 )
 
-func die(args ...interface{}) {
-	log.Error(args)
+func die(format string, args ...any) {
+	fmt.Fprintf(os.Stderr, format+"\n", args)
 	os.Exit(1)
 }
 
@@ -23,26 +21,19 @@ func main() {
 	if chkFlag(target_flag, output_flag, reg_flag, search_flag, del_flag) {
 		die("Check Flag error")
 	}
-	if err := changeLogLevel(verbose_flag); err != nil {
-		die(err)
-	}
 
 	file, err := os.Open(env_flag)
 	if err != nil {
-		die(err)
+		die("Open Env file error %v:", err)
 	}
 	defer file.Close()
 
 	cfg := &dbConfig{}
 	if err := cfg.loadConf(file); err != nil {
-		die(err)
+		die("Struct Config error %v:", err)
 	}
 
-	log.Info("[ASM ENV]:name: ", cfg.Env[target_flag].Name)
-	log.Info("[ASM ENV]:root path: ", cfg.Root)
-	log.Info("[ASM ENV]:dbpath: ", cfg.Dbpath)
-
 	if err := cfg.execDB(); err != nil {
-		die(err)
+		die("DB operation error %v:", err)
 	}
 }

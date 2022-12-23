@@ -1,16 +1,16 @@
 package main
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/naoina/toml"
-	log "github.com/sirupsen/logrus"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
@@ -31,6 +31,10 @@ type EnvInfo struct {
 func (cfg *dbConfig) loadConf(file io.Reader) error {
 	return toml.NewDecoder(file).Decode(&cfg)
 }
+
+var reg = `{{ red "Register:" }} {{ bar . "W9" "6" (cycle . "6" "6" "6" "6" ) "." "3N"}} {{speed . | rndcolor }} {{percent .}} {{string . "gst" | green}} {{string . "bst" | blue}}`
+var out = `{{ red "Output:" }} {{ bar . "W9" "6" (cycle . "6" "6" "6" "6" ) "." "3N"}} {{speed . | rndcolor }} {{percent .}} {{string . "gst" | green}} {{string . "bst" | blue}}`
+var sch = `{{ red "Search:" }} {{ bar . "W9" "6" (cycle . "6" "6" "6" "6" ) "." "3N"}} {{speed . | rndcolor }} {{percent .}} {{string . "gst" | green}} {{string . "bst" | blue}}`
 
 func (cfg *dbConfig) createDBPath(tomlabel string) (string, error) {
 	_, ok := cfg.Env[tomlabel]
@@ -61,67 +65,103 @@ func chkExt(file string, ext string) error {
 }
 
 func (cfg *dbConfig) regDB(db *leveldb.DB) error {
+	count := int64(5)
+	bar := pb.ProgressBarTemplate(reg).Start64(count)
+	bar.Set("bst", "fin").Set("gst", TITLE).
+		SetMaxWidth(80).SetRefreshRate(time.Second)
+	if err := bar.Err(); err != nil {
+		return err
+	}
+
 	ext, err := cfg.getExt(target_flag)
 	if err != nil {
 		return err
 	}
+	bar.Increment()
+
 	if err := chkExt(file_flag, ext); err != nil {
 		return err
 	}
+	bar.Increment()
+
 	reg_file := cfg.Root + "/" + file_flag
-	log.Info("[REG FILE]:path: ", reg_file)
+	bar.Increment()
 
 	bytes, err := ioutil.ReadFile(reg_file)
 	if err != nil {
 		return err
 	}
+	bar.Increment()
+
 	key := getFileNameWithoutExt(reg_file)
-	log.Info("[REG FILE]:key: ", key)
 	if err := db.Put([]byte(key), bytes, nil); err != nil {
 		return err
 	}
-	log.Info("[REG FILE]:success!!")
+	bar.Increment()
+	bar.Finish()
 
 	return err
 }
 
 func (cfg *dbConfig) outDB(db *leveldb.DB) error {
+	count := int64(3)
+	bar := pb.ProgressBarTemplate(out).Start64(count)
+	bar.Set("bst", "fin").Set("gst", TITLE).
+		SetMaxWidth(80).SetRefreshRate(time.Second)
+	if err := bar.Err(); err != nil {
+		return err
+	}
+
 	data, err := db.Get([]byte(key_flag), nil)
 	if err != nil {
 		return err
 	}
-	log.Info("byte: ", data)
+	bar.Increment()
 
 	out := cfg.Output + "/" + key_flag + cfg.Env[target_flag].Ext
-	log.Info("[OUTPUT]:output path: ", out)
 	wf, err := os.Create(out)
 	if err != nil {
 		return err
 	}
 	defer wf.Close()
+	bar.Increment()
 
 	_, err = wf.Write(data)
 	if err != nil {
 		return err
 	}
-	log.Info("[OUTPUT]: success!!")
+	bar.Increment()
+	bar.Finish()
 
 	return err
 }
 
 func (cfg *dbConfig) searchDB(db *leveldb.DB) error {
+	var keys []string
 	iter := db.NewIterator(util.BytesPrefix([]byte(key_flag)), nil)
 	for iter.Next() {
 		key := iter.Key()
-		value := iter.Value()
-		fmt.Println(string(key))
-		log.Info("[SEARCH]:key: ", string(key))
-		log.Info("[SEARCH]:value: ", hex.EncodeToString(value))
+		//value := iter.Value()
+		keys = append(keys, string(key))
 	}
 	iter.Release()
 	if err := iter.Error(); err != nil {
 		return err
 	}
+
+	count := int64(len(keys))
+	bar := pb.ProgressBarTemplate(sch).Start64(count)
+	bar.Set("bst", "fin").Set("gst", TITLE).
+		SetMaxWidth(80).SetRefreshRate(time.Second)
+	if err := bar.Err(); err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		bar.Increment()
+		fmt.Println(key)
+	}
+	bar.Finish()
 
 	return nil
 }
@@ -139,7 +179,6 @@ func (cfg *dbConfig) execDB() error {
 	if err != nil {
 		return err
 	}
-	log.Info("[TARGT DB]:path: ", dbname)
 
 	db, err := leveldb.OpenFile(dbname, nil)
 	if err != nil {

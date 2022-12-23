@@ -4,49 +4,67 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 
+	"github.com/google/goterm/term"
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	TITLE = "DB REG T00l"
+)
+
+func clyFprintf(w io.Writer, format string) {
+	fmt.Fprintf(w, term.Yellowf(format))
+}
+
+func clrFprintf(w io.Writer, format string) {
+	fmt.Fprintf(w, term.Redf(format))
+}
+
+func clbFprintf(w io.Writer, format string) {
+	fmt.Fprintf(w, term.Bluef(format))
+}
+
 func init() {
-	flag.CommandLine.Init("DB REG T00l", flag.ContinueOnError)
+	flag.CommandLine.Init(TITLE, flag.ContinueOnError)
 	flag.CommandLine.Usage = func() {
 		o := flag.CommandLine.Output()
 		fmt.Fprintf(o, "\nW963N Memory ~~ %s\n", flag.CommandLine.Name())
-		fmt.Fprintf(o, "\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-		fmt.Fprintf(o, "@@@@@@@@@@@@@  .@@@@@@@@@.  @@@@@@@@@@@@\n")
-		fmt.Fprintf(o, "@@@@@@@@@ (@@@@@@@@@@@@@@@@@@@) @@@@@@@@\n")
-		fmt.Fprintf(o, "@@@@@@ @@ @@@@             @@@@ @@ @@@@@\n")
-		fmt.Fprintf(o, "@@@@ @@@@@ @ @@@         @@@ @ @@@@ @@@@\n")
-		fmt.Fprintf(o, "@@@ @@@@@@ @@@@@@       @@@@@@ @@@@@ @@@\n")
-		fmt.Fprintf(o, "@@ @@@@@@,@@@@@@@       @@@@@@@,@@@@@ @@\n")
-		fmt.Fprintf(o, "@@ @@@@@@ @@@@@@@@     @@@@@@@@ @@@@@@ @\n")
-		fmt.Fprintf(o, "@       @@@      @     @      @@@      @\n")
-		fmt.Fprintf(o, "@@ @@@ @@@@@@   @@@   @@@   @@@@@@ @@ @@\n")
-		fmt.Fprintf(o, "@@@ @@ @@@@@@@@@@@@   @@@@@@@@@@@@ @@ @@\n")
-		fmt.Fprintf(o, "@@@@  @@@@@@@@@@@@@@ @@@@@@@@@@@@@ @ @@@\n")
-		fmt.Fprintf(o, "@@@@@  @@@@@@@@@@@@@ @@@@@@@@@@@@   @@@@\n")
-		fmt.Fprintf(o, "@@@@@@@   @@@@@@@  @@@  @@@@@@@   @@@@@@\n")
-		fmt.Fprintf(o, "@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@ @@@@@@@@@\n")
-		fmt.Fprintf(o, "@@@@@@@@@@@@@@@     @     @@@@@@@@@@@@@@\n\n")
-		fmt.Fprintf(o, "\nUsage: \n")
+		clyFprintf(o, "\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+		clyFprintf(o, "@@@@@@@@@@@@@  .@@@@@@@@@.  @@@@@@@@@@@@\n")
+		clyFprintf(o, "@@@@@@@@@ (@@@@@@@@@@@@@@@@@@@) @@@@@@@@\n")
+		clyFprintf(o, "@@@@@@ @@ @@@@             @@@@ @@ @@@@@\n")
+		clyFprintf(o, "@@@@ @@@@@ @ @@@         @@@ @ @@@@ @@@@\n")
+		clyFprintf(o, "@@@ @@@@@@ @@@@@@       @@@@@@ @@@@@ @@@\n")
+		clyFprintf(o, "@@ @@@@@@,@@@@@@@       @@@@@@@,@@@@@ @@\n")
+		clyFprintf(o, "@@ @@@@@@ @@@@@@@@     @@@@@@@@ @@@@@@ @\n")
+		clyFprintf(o, "@       @@@      @     @      @@@      @\n")
+		clyFprintf(o, "@@ @@@ @@@@@@   @@@   @@@   @@@@@@ @@ @@\n")
+		clyFprintf(o, "@@@ @@ @@@@@@@@@@@@   @@@@@@@@@@@@ @@ @@\n")
+		clyFprintf(o, "@@@@  @@@@@@@@@@@@@@ @@@@@@@@@@@@@ @ @@@\n")
+		clyFprintf(o, "@@@@@  @@@@@@@@@@@@@ @@@@@@@@@@@@   @@@@\n")
+		clyFprintf(o, "@@@@@@@   @@@@@@@  @@@  @@@@@@@   @@@@@@\n")
+		clyFprintf(o, "@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@ @@@@@@@@@\n")
+		clyFprintf(o, "@@@@@@@@@@@@@@@     @     @@@@@@@@@@@@@@\n\n")
+		clrFprintf(o, "\nUsage: \n")
 		fmt.Fprintf(o, "  simpfile2db -t [DB NAME] -r -f [KEY(FILE NAME)].[Ext]\n")
 		fmt.Fprintf(o, "  simpfile2db -t [DB NAME] -s -k [KEY]\n")
 		fmt.Fprintf(o, "  simpfile2db -t [DB NAME] -d -k [KEY]\n")
 		fmt.Fprintf(o, "  simpfile2db -t [DB NAME] -o -k [KEY]\n")
-		fmt.Fprintf(o, "\nOptions: \n")
+		clrFprintf(o, "\nOptions: \n")
 		flag.PrintDefaults()
-		fmt.Fprintf(o, "\nHobbyright 2022 walnut 🐿🐿🐿 .\n\n")
+		clbFprintf(o, "\nHobbyright 2022 walnut 🐿🐿🐿 .\n\n")
 	}
-	flag.StringVar(&env_flag, "e", "./env.toml", "path of env.toml.")
-	flag.StringVar(&target_flag, "t", "", "Use db name.")
-	flag.BoolVar(&reg_flag, "r", false, "Register file.")
-	flag.BoolVar(&search_flag, "s", false, "Search file.")
-	flag.BoolVar(&del_flag, "d", false, "Delete file.")
-	flag.BoolVar(&output_flag, "o", false, "Output file.")
-	flag.StringVar(&file_flag, "f", "", "file path")
-	flag.StringVar(&key_flag, "k", "", "key")
-	flag.StringVar(&verbose_flag, "v", "error", "Select types(info, warn, error).")
+	flag.StringVar(&env_flag, term.Greenf("e"), "./env.toml", "path of env.toml.")
+	flag.StringVar(&target_flag, term.Greenf("t"), "", "Use db name.")
+	flag.BoolVar(&reg_flag, term.Greenf("r"), false, "Register file.")
+	flag.BoolVar(&search_flag, term.Greenf("s"), false, "Search file.")
+	flag.BoolVar(&del_flag, term.Greenf("d"), false, "Delete file.")
+	flag.BoolVar(&output_flag, term.Greenf("o"), false, "Output file.")
+	flag.StringVar(&file_flag, term.Greenf("f"), "", "file path")
+	flag.StringVar(&key_flag, term.Greenf("k"), "", "key")
+	flag.StringVar(&verbose_flag, term.Greenf("v"), "error", "Select types(info, warn, error).")
 }
 
 var (
